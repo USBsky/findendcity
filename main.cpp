@@ -1,104 +1,74 @@
 #include <cstdio>
 #include <algorithm>
 #include <iostream>
-#include <random>
-#define LB long double
+
+#define LD long double
 using namespace std;
-const int maxn = 32;
 
-class point
-{
-public:
-    LB x = 0, y = 0;
-    point() {};
-    point(LB x, LB y)
-    {
-        this->x = x;
-        this->y = y;
+namespace axis {
+    static const int maxn = 6 + 5;
+
+    class point {
+    public:
+        LD x, y;
+
+        point() {}
+
+        point(LD x, LD y) : x(x), y(y) {}
+    };
+
+    class line {
+    public:
+        LD A, B, C;
+
+        line() {}
+
+        line(point p1, point p2) {
+            A = p1.y - p2.y;
+            B = p2.x - p1.x;
+            C = p1.x * p2.y - p2.x * p1.y;
+        }
+    };
+
+    line arr[maxn];
+
+    point getCross(line l1, line l2) {
+        return {(l1.B * l2.C - l2.B * l1.C) / (l1.A * l2.B - l2.A - l1.B),
+                -(l1.A * l2.C - l2.A - l1.C) / (l1.A * l2.B - l2.A * l1.B)};
     }
-    ~point() {};
-};
 
-class line
-{
-public:
-    LB k, b;
-    line() {};
-    line(point p1, point p2)
-    {
-        k = (p2.y - p1.y) / (p2.x - p1.x);
-        b = p2.y - k * p2.x;
-    }
-};
-
-line arr[6];
-
-LB minp(LB a, LB b, LB c)
-{
-    if (c < min(a, b))
-        return c;
-    else
-        return min(a, b);
-}
-LB maxp(LB a, LB b, LB c)
-{
-    if (c > max(a, b))
-        return c;
-    else
-        return max(a, b);
-}
-
-point getmid(line l1, line l2, line l3)
-{
-    LB xlow, xhigh, ylow, yhigh;
-    point p1 = { (l2.b - l1.b) / (l1.k - l2.k), (l1.k * l2.b - l1.b * l2.k) / (l1.k - l2.k) };
-    point p2 = { (l2.b - l3.b) / (l3.k - l2.k), (l3.k * l2.b - l3.b * l2.k) / (l3.k - l2.k) };
-    point p3 = { (l3.b - l1.b) / (l1.k - l3.k), (l1.k * l3.b - l1.b * l3.k) / (l1.k - l3.k) };
-    xlow = minp(p1.x, p2.x, p3.x), xhigh = maxp(p1.x, p2.x, p3.x), ylow = minp(p1.y, p2.y, p3.y), yhigh = maxp(p1.y, p2.y, p3.y);
-    return { (xlow + xhigh) / 2, (ylow + yhigh) / 2 };
-}
-
-void getans()
-{
-    point ans[maxn];
-    int cnt = 0;
-    LB x = 0, y = 0;
-    for (int i = 0; i < 6; i++)
-    {
-        for (int j = i + 1; j < 6; j++)
-        {
-            for (int k = j + 1; k < 6; k++)
-            {
-                ans[cnt++] = getmid(arr[i], arr[j], arr[k]);
+    void getPlace() {
+        point cnt[33 + 10];
+        LD x = 0, y = 0;
+        int tot = 0;
+        for (int i = 0; i < 6; i++)
+            for (int j = i + 1; j < 6; j++) {
+                cnt[tot++] = getCross(arr[i], arr[j]);
             }
+        for (int i = 0; i < tot; i++) {
+            x += cnt[i].x, y += cnt[i].y;
+        }
+        cout << "末地入口的坐标为：\nx = " << x / tot << "\n" << "y = " << y / tot << endl;
+    }
+
+    void read() {
+        for (int i = 0; i < 6; i++) {
+            printf("第%d组数据，请任选一个坐标点：\n", i + 1);
+            LD x1, y1, x2, y2;
+            cin >> x1 >> y1;
+            printf("请根据末影珍珠的方向，前进一段距离，然后输入坐标，请务必将屏幕中的十字准星对准珍珠！\n");
+            cin >> x2 >> y2;
+            arr[i] = {{x1, y1},
+                      {x2, y2}};
         }
     }
-    for (int i = 0; i < cnt; i++)
-    {
-        x += ans[i].x, y += ans[i].y;
-    }
-    x /= cnt, y /= cnt;
-    cout << "末地入口 x = " << x << " " << "y = " << y << endl;
-}
+};
 
 
-void read()
-{
-    printf("总共需要测量六次！\n");
-    for (int i = 0; i < 6; i++)
-    {
-        LB x1, y1, x2, y2;
-        printf("第%d次测量：\n请输入第一个坐标，x, y用空格隔开：\n", i + 1);
-        cin >> x1 >> y1;
-        printf("请输入第二个坐标， x, y用空格隔开：\n");
-        cin >> x2 >> y2;
-        arr[i] = line({ x1, y1 }, { x2, y2 });
-    }
-}
-
-int main()
-{
+int main() {
     freopen("data.in", "r", stdin);
-    read();
-    getans();
+    freopen("data.out", "w", stdout);
+    axis::read();
+    axis::getPlace();
+    system("pause");
 }
